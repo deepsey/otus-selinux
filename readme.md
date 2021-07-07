@@ -35,7 +35,7 @@ curl http://localhost
      
     curl: (7) Failed to connect to localhost port 80: Connection refused
   
-echo > /var/log/audit/audit.log
+echo > /var/log/audit/audit.log  
 yum install -y setroubleshoot-server
   
   
