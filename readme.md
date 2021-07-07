@@ -27,8 +27,8 @@ firewall-cmd --permanent --add-port=8098/tcp
 
 systemctl restart nginx  
 
-  Job for nginx.service failed because the control process exited with error code.
-  See "systemctl status nginx.service" and "journalctl -xe" for details.
+    Job for nginx.service failed because the control process exited with error code.  
+    See "systemctl status nginx.service" and "journalctl -xe" for details.  
 
 
 # curl http://localhost
