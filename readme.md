@@ -2,12 +2,12 @@
 
 #### Устанавливаем необходимые пакеты и настраиваем firewall
 
-yum install -y nginx policycoreutils-python-utils setools-console
-systemctl enable nginx
-systemctl start nginx
-curl http://localhost
-firewall-cmd --permanent --add-port=80/tcp
-firewall-cmd --reload
+#yum install -y nginx policycoreutils-python-utils setools-console
+#systemctl enable nginx
+#systemctl start nginx
+#curl http://localhost
+#firewall-cmd --permanent --add-port=80/tcp
+#firewall-cmd --reload
     
 #### Меняем порт nginx на нестандартный, добавляем правило в firewall
 
