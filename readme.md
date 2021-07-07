@@ -1,17 +1,24 @@
-# yum install -y nginx policycoreutils-python-utils setools-console
-# systemctl enable nginx
-# systemctl start nginx
-# curl http://localhost
-# firewall-cmd --permanent --add-port=80/tcp
-# firewall-cmd --reload
+# ДЗ по теме Selinux
+
+#### Устанавливаем необходимые пакеты и настраиваем firewall
+
+yum install -y nginx policycoreutils-python-utils setools-console
+systemctl enable nginx
+systemctl start nginx
+curl http://localhost
+firewall-cmd --permanent --add-port=80/tcp
+firewall-cmd --reload
     
-# vi /etc/nginx/nginx.conf    
+#### Меняем порт nginx на нестандартный, добавляем правило в firewall
+
+vi /etc/nginx/nginx.conf    
     
     server {
         listen       8098 default_server;
         listen       [::]:8098 default_server;
         
-# firewall-cmd --permanent --add-port=8098/tcp        
+
+firewall-cmd --permanent --add-port=8098/tcp        
 
 =================================================================================================================
 1. Переключатели setsebool 
