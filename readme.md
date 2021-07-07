@@ -54,75 +54,76 @@ sealert -a /var/log/audit/audit.log
     То you need to modify the port type.
     Сделать  
     # semanage port -a -t PORT_TYPE -p tcp 8098  
-    где PORT_TYPE может принимать значения: http_cache_port_t, http_port_t, jboss_management_port_t, jboss_messaging_port_t, ntop_port_t, puppet_port_t.
+    где PORT_TYPE может принимать значения: http_cache_port_t, http_port_t, jboss_management_port_t, jboss_messaging_port_t, ntop_port_t, puppet_port_t.  
+  
+    *****  Модуль catchall_boolean предлагает (точность 7.83)  *******************
+  
+    Если хотите allow nis to enabled
+    То вы должны сообщить SELinux об этом, включив переключатель «nis_enabled».
+  
+    Сделать
+    setsebool -P nis_enabled 1  
+  
+    *****  Модуль catchall предлагает (точность 1.41)  ***************************
+  
+    Если вы считаете, что nginx должно быть разрешено name_bind доступ к port 8098 tcp_socket по умолчанию.
+    То рекомендуется создать отчет об ошибке.
+    Чтобы разрешить доступ, можно создать локальный модуль политики.
+    Сделать
+    разрешить этот доступ сейчас, выполнив: # ausearch -c 'nginx'--raw | audit2allow -M my-nginx # semodule -X 300 -i my-nginx.pp
+  
+  
+    Дополнительные сведения:  
+    Исходный контекст             system_u:system_r:httpd_t:s0  
+    Целевой контекст              system_u:object_r:unreserved_port_t:s0  
+    Целевые объекты               port 8098 [ tcp_socket ]  
+    Источник                      nginx  
+    Путь к источнику              /usr/sbin/nginx  
+    Порт                          8098  
+    Узел                          <Unknown>  
+    Исходные пакеты RPM           nginx-1.14.1-9.module_el8.0.0+184+e34fea82.x86_64  
+    Целевые пакеты RPM             
+    SELinux Policy RPM            selinux-policy-targeted-3.14.3-54.el8_3.2.noarch  
+    Local Policy RPM              selinux-policy-targeted-3.14.3-54.el8_3.2.noarch  
+    SELinux активен               True  
+    Тип регламента                targeted  
+    Режим                         Enforcing  
+    Имя узла                      otus-selinux  
+    Платформа                     Linux otus-selinux 4.18.0-240.15.1.el8_3.x86_64 #1  
+                              SMP Mon Mar 1 17:16:16 UTC 2021 x86_64 x86_64  
+    Счетчик уведомлений           1  
+    Впервые обнаружено            2021-04-28 17:45:59 UTC  
+    В последний раз               2021-04-28 17:45:59 UTC  
+    Локальный ID                  47528a6d-c268-471b-a8b2-8586701af408  
+  
+    Построчный вывод сообщений аудита  
+    type=AVC msg=audit(1619631959.479:622): avc:  denied  { name_bind } for  pid=4106 comm="nginx" src=8098 scontext=system_u:system_r:httpd_t:s0          tcontext=system_u:object_r:unreserved_port_t:s0 tclass=tcp_socket permissive=0  
+  
+  
+    type=SYSCALL msg=audit(1619631959.479:622): arch=x86_64 syscall=bind success=no exit=EACCES a0=8 a1=555f0f6bcb08 a2=10 a3=7ffcff5a9a10 items=0 ppid=1 pid=4106 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm=nginx exe=/usr/sbin/nginx subj=system_u:system_r:httpd_t:s0 key=(null)ARCH=x86_64 SYSCALL=bind AUID=unset UID=root GID=root EUID=root SUID=root FSUID=root EGID=root SGID=root FSGID=root  
+  
+    Hash: nginx,httpd_t,unreserved_port_t,tcp_socket,name_bind
+    
+   
+  
+setsebool -P nis_enabled 1  
+systemctl restart nginx  
 
-*****  Модуль catchall_boolean предлагает (точность 7.83)  *******************
 
-Если хотите allow nis to enabled
-То вы должны сообщить SELinux об этом, включив переключатель «nis_enabled».
+systemctl status nginx  
 
-Сделать
-setsebool -P nis_enabled 1
-
-*****  Модуль catchall предлагает (точность 1.41)  ***************************
-
-Если вы считаете, что nginx должно быть разрешено name_bind доступ к port 8098 tcp_socket по умолчанию.
-То рекомендуется создать отчет об ошибке.
-Чтобы разрешить доступ, можно создать локальный модуль политики.
-Сделать
-разрешить этот доступ сейчас, выполнив: # ausearch -c 'nginx'--raw | audit2allow -M my-nginx # semodule -X 300 -i my-nginx.pp
-
-
-Дополнительные сведения:
-Исходный контекст             system_u:system_r:httpd_t:s0
-Целевой контекст              system_u:object_r:unreserved_port_t:s0
-Целевые объекты               port 8098 [ tcp_socket ]
-Источник                      nginx
-Путь к источнику              /usr/sbin/nginx
-Порт                          8098
-Узел                          <Unknown>
-Исходные пакеты RPM           nginx-1.14.1-9.module_el8.0.0+184+e34fea82.x86_64
-Целевые пакеты RPM            
-SELinux Policy RPM            selinux-policy-targeted-3.14.3-54.el8_3.2.noarch
-Local Policy RPM              selinux-policy-targeted-3.14.3-54.el8_3.2.noarch
-SELinux активен               True
-Тип регламента                targeted
-Режим                         Enforcing
-Имя узла                      otus-selinux
-Платформа                     Linux otus-selinux 4.18.0-240.15.1.el8_3.x86_64 #1
-                              SMP Mon Mar 1 17:16:16 UTC 2021 x86_64 x86_64
-Счетчик уведомлений           1
-Впервые обнаружено            2021-04-28 17:45:59 UTC
-В последний раз               2021-04-28 17:45:59 UTC
-Локальный ID                  47528a6d-c268-471b-a8b2-8586701af408
-
-Построчный вывод сообщений аудита
-type=AVC msg=audit(1619631959.479:622): avc:  denied  { name_bind } for  pid=4106 comm="nginx" src=8098 scontext=system_u:system_r:httpd_t:s0 tcontext=system_u:object_r:unreserved_port_t:s0 tclass=tcp_socket permissive=0
-
-
-type=SYSCALL msg=audit(1619631959.479:622): arch=x86_64 syscall=bind success=no exit=EACCES a0=8 a1=555f0f6bcb08 a2=10 a3=7ffcff5a9a10 items=0 ppid=1 pid=4106 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm=nginx exe=/usr/sbin/nginx subj=system_u:system_r:httpd_t:s0 key=(null)ARCH=x86_64 SYSCALL=bind AUID=unset UID=root GID=root EUID=root SUID=root FSUID=root EGID=root SGID=root FSGID=root
-
-Hash: nginx,httpd_t,unreserved_port_t,tcp_socket,name_bind
-
-
-
-# setsebool -P nis_enabled 1
-# systemctl restart nginx
-
-
-#systemctl status nginx
-● nginx.service - The nginx HTTP and reverse proxy server
-   Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled; vendor preset: disabled)
-   Active: active (running) since Wed 2021-04-28 17:49:13 UTC; 5min ago
-  Process: 4534 ExecStart=/usr/sbin/nginx (code=exited, status=0/SUCCESS)
-  Process: 4532 ExecStartPre=/usr/sbin/nginx -t (code=exited, status=0/SUCCESS)
-  Process: 4531 ExecStartPre=/usr/bin/rm -f /run/nginx.pid (code=exited, status=0/SUCCESS)
- Main PID: 4536 (nginx)
-    Tasks: 2 (limit: 2753)
-   Memory: 17.2M
-   CGroup: /system.slice/nginx.service
-           ├─4536 nginx: master process /usr/sbin/nginx
-           └─4537 nginx: worker process
+    ● nginx.service - The nginx HTTP and reverse proxy server
+    Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled; vendor preset: disabled)  
+    Active: active (running) since Wed 2021-04-28 17:49:13 UTC; 5min ago  
+    Process: 4534 ExecStart=/usr/sbin/nginx (code=exited, status=0/SUCCESS)  
+    Process: 4532 ExecStartPre=/usr/sbin/nginx -t (code=exited, status=0/SUCCESS)  
+    Process: 4531 ExecStartPre=/usr/bin/rm -f /run/nginx.pid (code=exited, status=0/SUCCESS)  
+    Main PID: 4536 (nginx)  
+    Tasks: 2 (limit: 2753)  
+    Memory: 17.2M
+    CGroup: /system.slice/nginx.service  
+           ├─4536 nginx: master process /usr/sbin/nginx  
+           └─4537 nginx: worker process  
 
 Apr 28 17:49:12 otus-selinux systemd[1]: Starting The nginx HTTP and reverse proxy server...
 Apr 28 17:49:13 otus-selinux nginx[4532]: nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
