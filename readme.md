@@ -30,28 +30,30 @@ systemctl restart nginx
     Job for nginx.service failed because the control process exited with error code.  
     See "systemctl status nginx.service" and "journalctl -xe" for details.  
 
+  
+curl http://localhost
+     
+    curl: (7) Failed to connect to localhost port 80: Connection refused
+  
+echo > /var/log/audit/audit.log
+yum install -y setroubleshoot-server
+  
+  
+  
+sealert -a /var/log/audit/audit.log  
 
-# curl http://localhost
-curl: (7) Failed to connect to localhost port 80: Connection refused
+      100% done
+      found 1 alerts in /var/log/audit/audit.log
+    --------------------------------------------------------------------------------
 
-# echo > /var/log/audit/audit.log
-# yum install -y setroubleshoot-server
+    SELinux запрещает /usr/sbin/nginx доступ name_bind к tcp_socket port 8098.
 
+    *****  Модуль bind_ports предлагает (точность 92.2)  *************************
 
-
-# sealert -a /var/log/audit/audit.log  
-100% done
-found 1 alerts in /var/log/audit/audit.log
---------------------------------------------------------------------------------
-
-SELinux запрещает /usr/sbin/nginx доступ name_bind к tcp_socket port 8098.
-
-*****  Модуль bind_ports предлагает (точность 92.2)  *************************
-
-Если вы хотите разрешить /usr/sbin/nginx для привязки к сетевому порту $PORT_ЧИСЛО
-То you need to modify the port type.
-Сделать
-# semanage port -a -t PORT_TYPE -p tcp 8098
+    Если вы хотите разрешить /usr/sbin/nginx для привязки к сетевому порту $PORT_ЧИСЛО  
+    То you need to modify the port type.
+    Сделать  
+    # semanage port -a -t PORT_TYPE -p tcp 8098  
     где PORT_TYPE может принимать значения: http_cache_port_t, http_port_t, jboss_management_port_t, jboss_messaging_port_t, ntop_port_t, puppet_port_t.
 
 *****  Модуль catchall_boolean предлагает (точность 7.83)  *******************
