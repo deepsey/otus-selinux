@@ -131,7 +131,7 @@ systemctl status nginx
     Apr 28 17:49:13 otus-selinux systemd[1]: nginx.service: Failed to parse PID from file /run/nginx.pid: Invalid argument  
     Apr 28 17:49:13 otus-selinux systemd[1]: Started The nginx HTTP and reverse proxy server.  
 
-===================================================================================================================
+=================================================================================================================
 #### 2. Добавление нестандартного порта в имеющийся тип  
 
 echo > /var/log/audit/audit.log  
