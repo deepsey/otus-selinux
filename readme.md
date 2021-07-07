@@ -124,125 +124,135 @@ systemctl status nginx
     CGroup: /system.slice/nginx.service  
            ├─4536 nginx: master process /usr/sbin/nginx  
            └─4537 nginx: worker process  
-
-Apr 28 17:49:12 otus-selinux systemd[1]: Starting The nginx HTTP and reverse proxy server...
-Apr 28 17:49:13 otus-selinux nginx[4532]: nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
-Apr 28 17:49:13 otus-selinux nginx[4532]: nginx: configuration file /etc/nginx/nginx.conf test is successful
-Apr 28 17:49:13 otus-selinux systemd[1]: nginx.service: Failed to parse PID from file /run/nginx.pid: Invalid argument
-Apr 28 17:49:13 otus-selinux systemd[1]: Started The nginx HTTP and reverse proxy server.
-
-=======================================================================================================================
-2. Добавление нестандартного порта в имеющийся тип
-
-# echo > /var/log/audit/audit.log
-# setsebool -P nis_enabled 0
-
-
-
-# systemctl restart nginx
-Job for nginx.service failed because the control process exited with error code.
-See "systemctl status nginx.service" and "journalctl -xe" for details.
-
-# semanage port -l | grep http
-http_cache_port_t              tcp      8080, 8118, 8123, 10001-10010
-http_cache_port_t              udp      3130
-http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000
-pegasus_http_port_t            tcp      5988
-pegasus_https_port_t           tcp      5989
-
-
-# seinfo --portcon=80
-
-Portcon: 4
-   portcon sctp 1-511 system_u:object_r:reserved_port_t:s0
-   portcon tcp 1-511 system_u:object_r:reserved_port_t:s0
-   portcon tcp 80 system_u:object_r:http_port_t:s0
-   portcon udp 1-511 system_u:object_r:reserved_port_t:s0
-
-
-# semanage port -a -t http_port_t -p tcp 8098
-
-# semanage port -l | grep http
-http_cache_port_t              tcp      8080, 8118, 8123, 10001-10010
-http_cache_port_t              udp      3130
-http_port_t                    tcp      8098, 80, 81, 443, 488, 8008, 8009, 8443, 9000
-pegasus_http_port_t            tcp      5988
-pegasus_https_port_t           tcp      5989
-
-# systemctl restart nginx
-# systemctl status nginx
-● nginx.service - The nginx HTTP and reverse proxy server
-   Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled; vendor preset: disabled)
-   Active: active (running) since Wed 2021-04-28 18:40:08 UTC; 14s ago
-  Process: 1219 ExecStart=/usr/sbin/nginx (code=exited, status=0/SUCCESS)
-  Process: 1216 ExecStartPre=/usr/sbin/nginx -t (code=exited, status=0/SUCCESS)
-  Process: 1215 ExecStartPre=/usr/bin/rm -f /run/nginx.pid (code=exited, status=0/SUCCESS)
- Main PID: 1221 (nginx)
-    Tasks: 2 (limit: 2753)
-   Memory: 16.2M
-   CGroup: /system.slice/nginx.service
-           ├─1221 nginx: master process /usr/sbin/nginx
-           └─1222 nginx: worker process
-
-Apr 28 18:40:07 otus-selinux systemd[1]: Starting The nginx HTTP and reverse proxy server...
-Apr 28 18:40:08 otus-selinux nginx[1216]: nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
-Apr 28 18:40:08 otus-selinux nginx[1216]: nginx: configuration file /etc/nginx/nginx.conf test is successful
-Apr 28 18:40:08 otus-selinux systemd[1]: nginx.service: Failed to parse PID from file /run/nginx.pid: Invalid argument
-Apr 28 18:40:08 otus-selinux systemd[1]: Started The nginx HTTP and reverse proxy server.
+  
+    Apr 28 17:49:12 otus-selinux systemd[1]: Starting The nginx HTTP and reverse proxy server...  
+    Apr 28 17:49:13 otus-selinux nginx[4532]: nginx: the configuration file /etc/nginx/nginx.conf syntax is ok  
+    Apr 28 17:49:13 otus-selinux nginx[4532]: nginx: configuration file /etc/nginx/nginx.conf test is successful  
+    Apr 28 17:49:13 otus-selinux systemd[1]: nginx.service: Failed to parse PID from file /run/nginx.pid: Invalid argument  
+    Apr 28 17:49:13 otus-selinux systemd[1]: Started The nginx HTTP and reverse proxy server.  
 
 ======================================================================================================================
-3. Формирование и установка модуля SELinux
+#### 2. Добавление нестандартного порта в имеющийся тип  
 
-# semanage port -d -t http_port_t -p tcp 8098
+echo > /var/log/audit/audit.log  
+setsebool -P nis_enabled 0  
 
-# semanage port -l | grep http
-http_cache_port_t              tcp      8080, 8118, 8123, 10001-10010
-http_cache_port_t              udp      3130
-http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000
-pegasus_http_port_t            tcp      5988
-pegasus_https_port_t           tcp      5989
+systemctl restart nginx  
 
-# echo > /var/log/audit/audit.log
-# systemctl restart nginx
-Job for nginx.service failed because the control process exited with error code.
-See "systemctl status nginx.service" and "journalctl -xe" for details.
+    Job for nginx.service failed because the control process exited with error code.  
+    See "systemctl status nginx.service" and "journalctl -xe" for details.  
 
-# sealert -a /var/log/audit/audit.log  
+semanage port -l | grep http  
 
-
-# ausearch -c 'nginx' --raw | audit2allow -M my-nginx # semodule -X 300 -i my-nginx.pp
-********************* ВАЖНО ************************
-Чтобы сделать этот пакет политики активным, выполните: semodule -i my-nginx.pp
+    http_cache_port_t              tcp      8080, 8118, 8123, 10001-10010  
+    http_cache_port_t              udp      3130  
+    http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000  
+    pegasus_http_port_t            tcp      5988  
+    pegasus_https_port_t           tcp      5989  
+    
 
 
-# ls
-my-nginx.pp  my-nginx.te
+seinfo --portcon=80  
 
-# semodule -i my-nginx.pp
+    Portcon: 4  
+       portcon sctp 1-511 system_u:object_r:reserved_port_t:s0  
+       portcon tcp 1-511 system_u:object_r:reserved_port_t:s0  
+       portcon tcp 80 system_u:object_r:http_port_t:s0  
+       portcon udp 1-511 system_u:object_r:reserved_port_t:s0  
+       
+ 
 
-# semodule -l | grep nginx
-my-nginx
+semanage port -a -t http_port_t -p tcp 8098  
 
-# systemctl restart nginx
-# systemctl status nginx
-● nginx.service - The nginx HTTP and reverse proxy server
-   Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled; vendor preset: disabled)
-   Active: active (running) since Wed 2021-04-28 18:52:13 UTC; 34s ago
-  Process: 1293 ExecStart=/usr/sbin/nginx (code=exited, status=0/SUCCESS)
-  Process: 1291 ExecStartPre=/usr/sbin/nginx -t (code=exited, status=0/SUCCESS)
-  Process: 1290 ExecStartPre=/usr/bin/rm -f /run/nginx.pid (code=exited, status=0/SUCCESS)
- Main PID: 1295 (nginx)
-    Tasks: 2 (limit: 2753)
-   Memory: 18.6M
-   CGroup: /system.slice/nginx.service
-           ├─1295 nginx: master process /usr/sbin/nginx
-           └─1296 nginx: worker process
+semanage port -l | grep http  
 
-Apr 28 18:52:12 otus-selinux systemd[1]: Starting The nginx HTTP and reverse proxy server...
-Apr 28 18:52:13 otus-selinux nginx[1291]: nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
-Apr 28 18:52:13 otus-selinux nginx[1291]: nginx: configuration file /etc/nginx/nginx.conf test is successful
-Apr 28 18:52:13 otus-selinux systemd[1]: nginx.service: Failed to parse PID from file /run/nginx.pid: Invalid argument
-Apr 28 18:52:13 otus-selinux systemd[1]: Started The nginx HTTP and reverse proxy server.
+    http_cache_port_t              tcp      8080, 8118, 8123, 10001-10010  
+    http_cache_port_t              udp      3130  
+    http_port_t                    tcp      8098, 80, 81, 443, 488, 8008, 8009, 8443, 9000  
+    pegasus_http_port_t            tcp      5988  
+    pegasus_https_port_t           tcp      5989  
+
+systemctl restart nginx  
+systemctl status nginx  
+
+    ● nginx.service - The nginx HTTP and reverse proxy server  
+      Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled; vendor preset: disabled)  
+      Active: active (running) since Wed 2021-04-28 18:40:08 UTC; 14s ago  
+      Process: 1219 ExecStart=/usr/sbin/nginx (code=exited, status=0/SUCCESS)  
+      Process: 1216 ExecStartPre=/usr/sbin/nginx -t (code=exited, status=0/SUCCESS)  
+      Process: 1215 ExecStartPre=/usr/bin/rm -f /run/nginx.pid (code=exited, status=0/SUCCESS)  
+      Main PID: 1221 (nginx)  
+      Tasks: 2 (limit: 2753)  
+      Memory: 16.2M  
+      CGroup: /system.slice/nginx.service  
+           ├─1221 nginx: master process /usr/sbin/nginx  
+           └─1222 nginx: worker process  
+
+    Apr 28 18:40:07 otus-selinux systemd[1]: Starting The nginx HTTP and reverse proxy server...
+    Apr 28 18:40:08 otus-selinux nginx[1216]: nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+    Apr 28 18:40:08 otus-selinux nginx[1216]: nginx: configuration file /etc/nginx/nginx.conf test is successful
+    Apr 28 18:40:08 otus-selinux systemd[1]: nginx.service: Failed to parse PID from file /run/nginx.pid: Invalid argument
+    Apr 28 18:40:08 otus-selinux systemd[1]: Started The nginx HTTP and reverse proxy server.  
+
+====================================================================================================================  
+#### 3. Формирование и установка модуля SELinux  
+
+semanage port -d -t http_port_t -p tcp 8098  
+  
+semanage port -l | grep http  
+
+    http_cache_port_t              tcp      8080, 8118, 8123, 10001-10010  
+    http_cache_port_t              udp      3130  
+    http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000  
+    pegasus_http_port_t            tcp      5988  
+    pegasus_https_port_t           tcp      5989  
+  
+echo > /var/log/audit/audit.log    
+systemctl restart nginx  
+
+    Job for nginx.service failed because the control process exited with error code.  
+    See "systemctl status nginx.service" and "journalctl -xe" for details.  
+  
+sealert -a /var/log/audit/audit.log    
+  
+  
+ausearch -c 'nginx' --raw | audit2allow -M my-nginx # semodule -X 300 -i my-nginx.pp  
+
+    ********************* ВАЖНО ************************  
+    Чтобы сделать этот пакет политики активным, выполните: semodule -i my-nginx.pp
+
+  
+ls  
+
+    my-nginx.pp  my-nginx.te  
+  
+semodule -i my-nginx.pp  
+  
+semodule -l | grep nginx  
+
+    my-nginx  
+
+systemctl restart nginx  
+systemctl status nginx  
+
+    ● nginx.service - The nginx HTTP and reverse proxy server  
+       Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled; vendor preset: disabled)  
+       Active: active (running) since Wed 2021-04-28 18:52:13 UTC; 34s ago  
+      Process: 1293 ExecStart=/usr/sbin/nginx (code=exited, status=0/SUCCESS)  
+      Process: 1291 ExecStartPre=/usr/sbin/nginx -t (code=exited, status=0/SUCCESS)  
+      Process: 1290 ExecStartPre=/usr/bin/rm -f /run/nginx.pid (code=exited, status=0/SUCCESS)  
+     Main PID: 1295 (nginx)  
+        Tasks: 2 (limit: 2753)  
+       Memory: 18.6M  
+       CGroup: /system.slice/nginx.service  
+               ├─1295 nginx: master process /usr/sbin/nginx  
+               └─1296 nginx: worker process  
+  
+    Apr 28 18:52:12 otus-selinux systemd[1]: Starting The nginx HTTP and reverse proxy server...  
+    Apr 28 18:52:13 otus-selinux nginx[1291]: nginx: the configuration file /etc/nginx/nginx.conf syntax is ok  
+    Apr 28 18:52:13 otus-selinux nginx[1291]: nginx: configuration file /etc/nginx/nginx.conf test is successful  
+    Apr 28 18:52:13 otus-selinux systemd[1]: nginx.service: Failed to parse PID from file /run/nginx.pid: Invalid argument  
+    Apr 28 18:52:13 otus-selinux systemd[1]: Started The nginx HTTP and reverse proxy server.  
 
 
 
